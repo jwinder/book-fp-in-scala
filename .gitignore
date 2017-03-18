@@ -17,10 +17,3 @@ project/plugins/project/
 .history
 .cache
 .lib/
-
-### https://raw.githubusercontent.com/github/gitignore/master/Global/Ensime.gitignore ###
-
-# Ensime specific
-.ensime
-.ensime_cache/
-.ensime_lucene/
