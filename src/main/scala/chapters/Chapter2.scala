@@ -1,7 +1,7 @@
-package example
+package chapters
 import scala.annotation.tailrec
 
-object chapter2 {
+object Chapter2 {
 
   // exercise 2.1
   // this version gives the fib number 0 to index 0, not 1

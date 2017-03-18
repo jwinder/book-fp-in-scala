@@ -1,4 +1,4 @@
-package example.data
+package data
 import scala.annotation.tailrec
 
 sealed trait List[+A]

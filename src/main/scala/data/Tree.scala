@@ -1,4 +1,4 @@
-package example.data
+package data
 
 sealed trait Tree[+A]
 case class Leaf[A](value: A) extends Tree[A]

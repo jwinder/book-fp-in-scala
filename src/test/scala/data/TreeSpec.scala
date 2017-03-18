@@ -1,4 +1,4 @@
-package example.data
+package data
 import org.specs2.mutable.Specification
 
 class TreeSpec extends Specification {
