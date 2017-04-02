@@ -3,6 +3,9 @@ package data
 sealed trait Option[+A] {
   import Option._
 
+  def isSome: Boolean = !(isNone)
+  def isNone: Boolean = this == Option.none
+
   // exercise 4.1
 
   def map[B](f: A => B): Option[B] = this match {
@@ -40,4 +43,38 @@ object Option {
 
   def some[A](a: A): Option[A] = Some(a)
   def none[A]: Option[A] = None
+
+  // exercise 4.3
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] = {
+    for {
+      a <- a
+      b <- b
+    } yield f(a,b)
+  }
+
+  // exercise 4.4
+  def sequence2[A](a: List[Option[A]]): Option[List[A]] = {
+    List.foldLeft(a, some(List.empty[A])) { case (acc, next) =>
+      if (acc.isNone) {
+        acc
+      } else {
+        next match {
+          case None => none
+          case Some(value) => acc.map { accumulatedList => List.appendElement(accumulatedList, value) }
+        }
+      }
+    }
+  }
+
+  // exercise 4.5
+  def traverse[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+    List.foldLeft(a, some(List.empty[B])) { case (acc, next) =>
+      f(next) match {
+        case None => none
+        case Some(value) => acc.map { accumulatedList => List.appendElement(accumulatedList, value) }
+      }
+    }
+  }
+
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(identity)
 }

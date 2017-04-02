@@ -5,6 +5,7 @@ object Chapter4 {
   import Option._
 
   // Option functions are implemented in the data.Option type
+  // Either functions are implemented in the data.Either type
 
   // example of exceptions
 

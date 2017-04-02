@@ -111,6 +111,8 @@ object List {
   def append[A](a1: List[A], a2: List[A]): List[A] =
     foldRight(a1, a2)((a, acc) => Cons(a, acc))
 
+  def appendElement[A](as: List[A], a: A): List[A] = append(as, List(a))
+
   // exercise 3.15
   def appendAll[A](lists: List[List[A]]) =
     foldLeft(lists, List.empty[A])((as, acc) => append(as, acc))

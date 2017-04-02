@@ -14,5 +14,6 @@ class ListSpec extends Specification {
     List.hasSubsequence(List(1,2,3,4), List(1,2,3))  must beTrue
     List.hasSubsequence(List(5,6,1,2,3,4), List(1,2,3)) must beTrue
     List.hasSubsequence(List(5,6,1,2,3,4), List(3,4,5)) must beFalse
+    List.hasSubsequence(List(5,6,1,2,3,4), List(1,3)) must beFalse
   }
 }
