@@ -69,9 +69,13 @@ object Option {
   // exercise 4.5
   def traverse[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
     List.foldLeft(a, some(List.empty[B])) { case (acc, next) =>
-      f(next) match {
-        case None => none
-        case Some(value) => acc.map { accumulatedList => List.appendElement(accumulatedList, value) }
+      if (acc.isNone) {
+        acc
+      } else {
+        f(next) match {
+          case None => none
+          case Some(value) => acc.map { accumulatedList => List.appendElement(accumulatedList, value) }
+        }
       }
     }
   }
