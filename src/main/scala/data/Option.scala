@@ -60,10 +60,10 @@ object Option {
       } else {
         next match {
           case None => none
-          case Some(value) => acc.map { accumulatedList => List.appendElement(accumulatedList, value) }
+          case Some(value) => acc.map { accumulatedList => Cons(value, accumulatedList) }
         }
       }
-    }
+    }.map(List.reverse)
   }
 
   // exercise 4.5
@@ -74,10 +74,10 @@ object Option {
       } else {
         f(next) match {
           case None => none
-          case Some(value) => acc.map { accumulatedList => List.appendElement(accumulatedList, value) }
+          case Some(value) => acc.map { accumulatedList => Cons(value, accumulatedList) }
         }
       }
-    }
+    }.map(List.reverse)
   }
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(identity)

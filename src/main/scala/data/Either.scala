@@ -46,10 +46,10 @@ object Either {
       } else {
         f(next) match {
           case Left(value) => left(value)
-          case Right(value) => acc.map { accList => List.appendElement(accList, value) }
+          case Right(value) => acc.map { accList => Cons(value, accList) }
         }
       }
-    }
+    }.map(List.reverse)
   }
 
   def sequence[E,A](es: List[Either[E,A]]): Either[E, List[A]] = traverse(es)(identity)
