@@ -40,7 +40,7 @@ object Either {
   // exercise 4.7
 
   def traverse[E,A,B](as: List[A])(f: A => Either[E,B]): Either[E, List[B]] = {
-    List.foldLeft(as, right[E, List[B]](List.empty)) { case (acc, next) =>
+    as.foldLeft(right[E, List[B]](List.empty)) { case (acc, next) =>
       if (acc.isLeft) {
         acc
       } else {
@@ -49,7 +49,7 @@ object Either {
           case Right(value) => acc.map { accList => Cons(value, accList) }
         }
       }
-    }.map(List.reverse)
+    }.map(_.reverse)
   }
 
   def sequence[E,A](es: List[Either[E,A]]): Either[E, List[A]] = traverse(es)(identity)

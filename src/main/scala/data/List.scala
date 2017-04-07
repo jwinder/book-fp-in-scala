@@ -1,9 +1,28 @@
 package data
 import scala.annotation.tailrec
 
-sealed trait List[+A]
+sealed trait List[+A] {
+  def tail: List[A] = List.tail(this)
+  def setHead[A](head: A) = List.setHead(head, this)
+  def drop(n: Int): List[A] = List.drop(this, n)
+  def dropWhile(f: A => Boolean): List[A] = List.dropWhile(this, f)
+  def foldLeft[B](z: B)(f: (B,A) => B): B = List.foldLeft(this, z)(f)
+  def reverse: List[A] = List.reverse(this)
+  def foldRight[B](z: B)(f: (A,B) => B): B = List.foldRight(this, z)(f)
+  def append[A](other: List[A]) = List.append(this, other)
+  def appendElement[A](a: A) = List.appendElement(this, a)
+  def appendAll[A](lists: List[List[A]]) = List.appendAll(Cons(this, lists))
+  def map[B](f: A => B): List[B] = List.map(this)(f)
+  def filter(f: A => Boolean): List[A] = List.filter(this)(f)
+  def flatMap[B](f: A => List[B]): List[B] = List.flatMap(this)(f)
+  def zipWith[B,C](bs: List[B])(f: (A,B) => C): List[C] = List.zipWith(this, bs)(f)
+  def isEmpty: Boolean = List.isEmpty(this)
+  def nonEmpty: Boolean = List.nonEmpty(this)
+  def hasSubsequence[A](sub: List[A]): Boolean = List.hasSubsequence(this, sub)
+}
+
 case object Nil extends List[Nothing]
-case class Cons[+A](head: A, tail: List[A]) extends List[A]
+case class Cons[+A](head: A, theTail: List[A]) extends List[A]
 
 object List {
   def apply[A](as: A*): List[A] = {

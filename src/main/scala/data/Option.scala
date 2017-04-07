@@ -54,7 +54,7 @@ object Option {
 
   // exercise 4.4
   def sequence2[A](a: List[Option[A]]): Option[List[A]] = {
-    List.foldLeft(a, some(List.empty[A])) { case (acc, next) =>
+    a.foldLeft(some(List.empty[A])) { case (acc, next) =>
       if (acc.isNone) {
         acc
       } else {
@@ -63,12 +63,12 @@ object Option {
           case Some(value) => acc.map { accumulatedList => Cons(value, accumulatedList) }
         }
       }
-    }.map(List.reverse)
+    }.map(_.reverse)
   }
 
   // exercise 4.5
   def traverse[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
-    List.foldLeft(a, some(List.empty[B])) { case (acc, next) =>
+    a.foldLeft(some(List.empty[B])) { case (acc, next) =>
       if (acc.isNone) {
         acc
       } else {
@@ -77,7 +77,7 @@ object Option {
           case Some(value) => acc.map { accumulatedList => Cons(value, accumulatedList) }
         }
       }
-    }.map(List.reverse)
+    }.map(_.reverse)
   }
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(identity)
