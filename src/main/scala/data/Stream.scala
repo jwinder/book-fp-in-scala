@@ -21,6 +21,11 @@ sealed trait Stream[+A] {
     case StreamCons(h, _) => Some(h())
   }
 
+  def lastOption: Option[A] = this match {
+    case StreamEmpty => None
+    case StreamCons(h, t) => if (t().isEmpty) Some(h()) else t().lastOption
+  }
+
   // exercise 5.1
   def toList: List[A] = this match {
     case StreamEmpty => Nil

@@ -18,6 +18,11 @@ class StreamSpec extends Specification {
     Stream.empty.headOption2 must_== None
   }
 
+  "headOption" in {
+    Stream(1,2,3,4).lastOption must_== Some(4)
+    Stream.empty.lastOption must_== None
+  }
+
   "toList" in {
     Stream(1,2,3,4).toList must_== List(1,2,3,4)
     Stream.empty.toList must_== List.empty
