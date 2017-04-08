@@ -3,9 +3,17 @@ package data
 sealed trait Stream[+A] {
   import Stream._
 
-  def equiv[A](other: Stream[A]) = this.toList == other.toList
+  def equiv[A](other: Stream[A]): Boolean = (this, other) match {
+    case (StreamEmpty, StreamEmpty) => true
+    case (StreamCons(a, atail), StreamCons(b, btail)) => a() == b() && atail().equiv(btail())
+    case _ => false
+  }
 
-  def isEmpty: Boolean = equiv(Stream.empty)
+  def isEmpty: Boolean = this match {
+    case StreamEmpty => true
+    case _ => false
+  }
+
   def nonEmpty: Boolean = !isEmpty
 
   def headOption: Option[A] = this match {
