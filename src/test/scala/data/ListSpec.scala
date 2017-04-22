@@ -25,4 +25,8 @@ class ListSpec extends Specification {
     List(5,6,1,2,3,4).hasSubsequence(List(3,4,5)) must beFalse
     List(5,6,1,2,3,4).hasSubsequence(List(1,3)) must beFalse
   }
+
+  "fill" in {
+    List.fill(5)(1) must_== List(1,1,1,1,1)
+  }
 }

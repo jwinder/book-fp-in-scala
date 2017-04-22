@@ -191,4 +191,10 @@ object List {
       false
     }
   }
+
+  def fill[A](n: Int)(a: => A): List[A] = if (n <= 0) {
+    Nil
+  } else {
+    Cons(a, fill(n-1)(a))
+  }
 }
