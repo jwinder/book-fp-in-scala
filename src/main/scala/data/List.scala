@@ -2,6 +2,7 @@ package data
 import scala.annotation.tailrec
 
 sealed trait List[+A] {
+  def getAtIndex(index: Int): Option[A] = List.getAtIndex(this, index)
   def tail: List[A] = List.tail(this)
   def setHead[A](head: A) = List.setHead(head, this)
   def drop(n: Int): List[A] = List.drop(this, n)
@@ -19,6 +20,9 @@ sealed trait List[+A] {
   def isEmpty: Boolean = List.isEmpty(this)
   def nonEmpty: Boolean = List.nonEmpty(this)
   def hasSubsequence[A](sub: List[A]): Boolean = List.hasSubsequence(this, sub)
+  def length: Int = List.length(this)
+  def size: Int = List.size(this)
+  def sorted[B >: A](implicit ordering: Ordering[B]): List[A] = List.sorted[A,B](this)(ordering)
 }
 
 case object Nil extends List[Nothing]
@@ -114,6 +118,8 @@ object List {
   def product(ns: List[Double]) = foldLeft(ns, 1.0)(_ * _)
   def length[A](as: List[A]) = foldLeft(as, 0)((acc, _) => acc + 1)
 
+  def size[A](as: List[A]) = length(as)
+
   // exercise 3.12
   def reverse[A](as: List[A]): List[A] =
     foldLeft(as, List.empty[A])((acc, a) => Cons(a, acc))
@@ -196,5 +202,28 @@ object List {
     Nil
   } else {
     Cons(a, fill(n-1)(a))
+  }
+
+  def getAtIndex[A](as: List[A], index: Int): Option[A] = as match {
+    case Nil => Option.none[A]
+    case Cons(head, tail) if index <= 0 => Option.some(head)
+    case Cons(head, tail) => getAtIndex(tail, index - 1)
+  }
+
+  def sorted[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): List[A] = {
+    val length = as.length
+    if (length > 0) {
+      as.getAtIndex(length/2) match {
+        case Some(middle) =>
+          val lessThan: List[A] = as.filter(a => ordering.compare(a, middle) < 0).sorted(ordering)
+          val equals: List[A] = as.filter(a => ordering.compare(a, middle) == 0)
+          val greaterThan: List[A] = as.filter(a => ordering.compare(a, middle) > 0).sorted(ordering)
+          List.appendAll(List(lessThan, equals, greaterThan))
+        case None =>
+          as
+      }
+    } else {
+      as
+    }
   }
 }

@@ -108,12 +108,12 @@ object Chapter6 {
 
     // exercise 6.7
     def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = rng => {
-      val (list, finalRNG) = fs.foldLeft((List.empty[A], rng)) {
-        case ((as, lastRNG), f) =>
+      val (list, finalRNG) = fs.foldRight((List.empty[A], rng)) {
+        case (f, (as, lastRNG)) =>
           val (nextValue, nextRNG) = f(lastRNG)
           (Cons(nextValue, as), nextRNG)
       }
-      (list.reverse, finalRNG)
+      (list, finalRNG)
     }
 
     def ints(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))

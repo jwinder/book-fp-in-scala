@@ -71,8 +71,8 @@ class Chapter6Spec extends Specification {
     val rng = simpleRNGWithRandomSeed()
     val rands = List(Rand.int, Rand.double)
 
-    val (i, rng2) = Rand.int(rng)
-    val (d, _) = Rand.double(rng2)
+    val (d, rng2) = Rand.double(rng)
+    val (i, _) = Rand.int(rng2)
     Rand.sequence(rands)(rng)._1 must_== List(i, d)
   }
 
