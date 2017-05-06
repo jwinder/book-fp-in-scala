@@ -6,6 +6,8 @@ import java.util.concurrent._
 object Par {
   type Par[A] = ExecutorService => Future[A]
 
+  def run[A](es: ExecutorService)(par: Par[A]): Future[A] = par(es)
+
   def unit[A](a: A): Par[A] = (es: ExecutorService) => UnitFuture(a)
 
   case class UnitFuture[A](get: A) extends Future[A] {
@@ -84,12 +86,12 @@ object Par {
     }
   }
 
-  def parMap[A,B](as: List[A])(f: A => B): Par[List[B]] = {
+  def parMap[A,B](as: List[A])(f: A => B): Par[List[B]] = Par.fork {
     sequence(as.map(asyncF(f)))
   }
 
   // exercise 7.6
-  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = Par.fork {
     sequence(as.filter(f).map(lazyUnit(_)))
   }
 
@@ -110,4 +112,55 @@ object Par {
   def eachWordCount(paragraphs: List[String]): Par[List[Int]] = {
     parMap(paragraphs)(_.split("\\s").size)
   }
+
+  def equals[A](left: Par[A], right: Par[A]): Par[Boolean] = map2(left, right)(_ == _)
+
+  // exercise 7.8, fork can deadlock for fixed thread pools
+  // exercise 7.9
+  def deadlockFork(numThreads: Int): Unit = {
+    val es = Executors.newFixedThreadPool(numThreads)
+    List.fill(numThreads)(1).foldLeft(lazyUnit(1)) {
+      case (par, n) => fork(par)
+    }(es).get()
+  }
+
+  def delay[A](fa: => Par[A]): Par[A] = es => fa(es)
+
+  def choiceBool[A](cond: Par[Boolean])(truePar: Par[A], falsePar: Par[A]): Par[A] = es => {
+    if (cond(es).get) {
+      truePar(es)
+    } else {
+      falsePar(es)
+    }
+  }
+
+  // exercise 7.11
+  def choiceNList[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = es => {
+    choices(n(es).get)(es)
+  }
+
+  def choiceBool2[A](cond: Par[Boolean])(truePar: Par[A], falsePar: Par[A]): Par[A] = es => {
+    val n = Par.map(cond)(if (_) 0 else 1)
+    choiceNList(n)(List(truePar, falsePar))(es)
+  }
+
+  // exercise 7.12
+  def choiceMap[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] = es => {
+    choices(key(es).get)(es)
+  }
+
+  // exercise 7.13
+  def chooser[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] = es => {
+    choices(pa(es).get)(es)
+  }
+
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = es => {
+    chooser[Int,A](n) { n => choices(n) }(es)
+  }
+
+  // exercise 7.14
+  def flatMap[A,B](a: Par[A])(f: A => Par[B]): Par[B] = es => f(a(es).get)(es)
+  def join[A](a: Par[Par[A]]): Par[A] = es => (a(es).get())(es)
+  def flatMapViaJoin[A,B](a: Par[A])(f: A => Par[B]): Par[B] = join(map(a)(f))
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = flatMap(a)(identity)
 }

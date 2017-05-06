@@ -74,8 +74,78 @@ class ParSpec extends Specification {
     Par.eachWordCount(List("one", "two two", "three three three"))(es).get must_== List(1,2,3)
   }
 
+  "equals" in new context {
+    Par.equals(Par.unit(1), Par.unit(1))(es).get must beTrue
+    Par.equals(Par.unit(1), Par.unit(2))(es).get must beFalse
+  }
+
+  // "deadlockFork" in new context {
+  //   Par.deadlockFork(5) // hangs for any number
+  //   success
+  // }
+
+  "delay" in new context {
+    var completed = false
+    val par = Par.delay {
+      Par.unit {
+        completed = true
+        5
+      }
+    }
+
+    completed must beFalse
+    par(es).get must_== 5
+    completed must beTrue
+  }
+
+  "choiceBool" in new context {
+    Par.choiceBool(Par.unit(true))(Par.unit(1), Par.unit(2))(es).get must_== 1
+    Par.choiceBool(Par.unit(false))(Par.unit(1), Par.unit(2))(es).get must_== 2
+
+    Par.choiceBool2(Par.unit(true))(Par.unit(1), Par.unit(2))(es).get must_== 1
+    Par.choiceBool2(Par.unit(false))(Par.unit(1), Par.unit(2))(es).get must_== 2
+  }
+
+  "choiceN" in new context {
+    Par.choiceNList(Par.unit(0))(List(Par.unit(0), Par.unit(1), Par.unit(2)))(es).get must_== 0
+    Par.choiceNList(Par.unit(1))(List(Par.unit(0), Par.unit(1), Par.unit(2)))(es).get must_== 1
+    Par.choiceNList(Par.unit(2))(List(Par.unit(0), Par.unit(1), Par.unit(2)))(es).get must_== 2
+
+    Par.choiceN(Par.unit(0))(List(Par.unit(0), Par.unit(1), Par.unit(2)))(es).get must_== 0
+    Par.choiceN(Par.unit(1))(List(Par.unit(0), Par.unit(1), Par.unit(2)))(es).get must_== 1
+    Par.choiceN(Par.unit(2))(List(Par.unit(0), Par.unit(1), Par.unit(2)))(es).get must_== 2
+  }
+
+  "choiceMap" in new context {
+    val map = Map(0 -> Par.unit("zero"), 1 -> Par.unit("one"))
+    Par.choiceMap(Par.unit(0))(map)(es).get must_== "zero"
+    Par.choiceMap(Par.unit(1))(map)(es).get must_== "one"
+  }
+
+  "chooser/flatMap" in new context {
+    Par.chooser(Par.unit(1))(Par.unit(_))(es).get must_== 1
+    Par.chooser(Par.unit(2))(Par.unit(_))(es).get must_== 2
+    Par.chooser(Par.unit(3))(Par.unit(_))(es).get must_== 3
+
+    Par.flatMap(Par.unit(1))(Par.unit(_))(es).get must_== 1
+    Par.flatMap(Par.unit(2))(Par.unit(_))(es).get must_== 2
+    Par.flatMap(Par.unit(3))(Par.unit(_))(es).get must_== 3
+
+    Par.flatMapViaJoin(Par.unit(1))(Par.unit(_))(es).get must_== 1
+    Par.flatMapViaJoin(Par.unit(2))(Par.unit(_))(es).get must_== 2
+    Par.flatMapViaJoin(Par.unit(3))(Par.unit(_))(es).get must_== 3
+  }
+
+  "join" in new context {
+    Par.join(Par.unit(Par.unit(1)))(es).get must_== 1
+    Par.join(Par.unit(Par.unit(2)))(es).get must_== 2
+
+    Par.joinViaFlatMap(Par.unit(Par.unit(1)))(es).get must_== 1
+    Par.joinViaFlatMap(Par.unit(Par.unit(2)))(es).get must_== 2
+  }
+
   trait context extends Scope with After {
-    lazy val es = Executors.newSingleThreadExecutor()
+    lazy val es = Executors.newFixedThreadPool(25)
     def after() = es.shutdownNow()
 
     val ms = TimeUnit.MILLISECONDS

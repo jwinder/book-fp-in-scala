@@ -3,6 +3,8 @@ import scala.annotation.tailrec
 
 sealed trait List[+A] {
   def getAtIndex(index: Int): Option[A] = List.getAtIndex(this, index)
+  def valueAtIndex(index: Int): A = List.valueAtIndex(this, index)
+  def apply(index: Int): A = valueAtIndex(index)
   def tail: List[A] = List.tail(this)
   def setHead[A](head: A) = List.setHead(head, this)
   def drop(n: Int): List[A] = List.drop(this, n)
@@ -208,6 +210,12 @@ object List {
     case Nil => Option.none[A]
     case Cons(head, tail) if index <= 0 => Option.some(head)
     case Cons(head, tail) => getAtIndex(tail, index - 1)
+  }
+
+  def valueAtIndex[A](as: List[A], index: Int): A = as match {
+    case Nil => throw new IndexOutOfBoundsException
+    case Cons(head, tail) if index <= 0 => head
+    case Cons(head, tail) => valueAtIndex(tail, index - 1)
   }
 
   def sorted[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): List[A] = {
