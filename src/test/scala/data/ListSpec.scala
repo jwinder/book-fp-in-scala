@@ -61,4 +61,37 @@ class ListSpec extends Specification {
     List(2,2,2,3,1).sorted must_== List(1,2,2,2,3)
     List(100 to 1 by -1: _*).sorted must_== List(1 to 100: _*)
   }
+
+  "forall" in {
+    List(2,4).forall(_ % 2 == 0) must beTrue
+    List(1,2,4).forall(_ % 2 == 0) must beFalse
+    List.empty[Int].forall(_ % 2 == 0) must beTrue
+  }
+
+  "foreach" in {
+    var sum = 0
+    List(1,2,3).foreach(sum += _)
+    sum must_== 6
+  }
+
+  "head/headOption" in {
+    List(1,2,3).head must_== 1
+    List.empty.head must throwA[IndexOutOfBoundsException]
+    List(1,2,3).headOption must_== Option.some(1)
+    List.empty.headOption must_== None
+  }
+
+  "last/lastOption" in {
+    List(1,2,3).last must_== 3
+    List.empty.last must throwA[IndexOutOfBoundsException]
+    List(1,2,3).lastOption must_== Option.some(3)
+    List.empty.lastOption must_== None
+  }
+
+  "minOption/maxOption" in {
+    List(1,2,3).minOption must_== Option.some(1)
+    List(1,2,3).maxOption must_== Option.some(3)
+    List.empty[Int].minOption must_== Option.none
+    List.empty[Int].maxOption must_== Option.none
+  }
 }

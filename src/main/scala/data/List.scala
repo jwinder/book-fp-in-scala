@@ -3,6 +3,7 @@ import scala.annotation.tailrec
 
 sealed trait List[+A] {
   def getAtIndex(index: Int): Option[A] = List.getAtIndex(this, index)
+  def get(index: Int): Option[A] = getAtIndex(index)
   def valueAtIndex(index: Int): A = List.valueAtIndex(this, index)
   def apply(index: Int): A = valueAtIndex(index)
   def tail: List[A] = List.tail(this)
@@ -25,10 +26,18 @@ sealed trait List[+A] {
   def length: Int = List.length(this)
   def size: Int = List.size(this)
   def sorted[B >: A](implicit ordering: Ordering[B]): List[A] = List.sorted[A,B](this)(ordering)
+  def forall(p: A => Boolean): Boolean = List.forall(this)(p)
+  def foreach(f: A => Unit): Unit = List.foreach(this)(f)
+  def headOption: Option[A] = List.headOption(this)
+  def head: A = List.head(this)
+  def lastOption: Option[A] = List.lastOption(this)
+  def last: A = List.last(this)
+  def minOption[B >: A](implicit ordering: Ordering[B]): Option[A] = List.minOption[A,B](this)(ordering)
+  def maxOption[B >: A](implicit ordering: Ordering[B]): Option[A] = List.maxOption[A,B](this)(ordering)
 }
 
 case object Nil extends List[Nothing]
-case class Cons[+A](head: A, theTail: List[A]) extends List[A]
+case class Cons[+A](theHead: A, theTail: List[A]) extends List[A]
 
 object List {
   def apply[A](as: A*): List[A] = {
@@ -200,6 +209,8 @@ object List {
     }
   }
 
+  // some extra functions used in further chapters
+
   def fill[A](n: Int)(a: => A): List[A] = if (n <= 0) {
     Nil
   } else {
@@ -221,17 +232,40 @@ object List {
   def sorted[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): List[A] = {
     val length = as.length
     if (length > 0) {
-      as.getAtIndex(length/2) match {
-        case Some(middle) =>
-          val lessThan: List[A] = as.filter(a => ordering.compare(a, middle) < 0).sorted(ordering)
-          val equals: List[A] = as.filter(a => ordering.compare(a, middle) == 0)
-          val greaterThan: List[A] = as.filter(a => ordering.compare(a, middle) > 0).sorted(ordering)
-          List.appendAll(List(lessThan, equals, greaterThan))
-        case None =>
-          as
-      }
+      val middle = as.valueAtIndex(length/2)
+      val lessThan: List[A] = as.filter(a => ordering.compare(a, middle) < 0).sorted(ordering)
+      val equals: List[A] = as.filter(a => ordering.compare(a, middle) == 0)
+      val greaterThan: List[A] = as.filter(a => ordering.compare(a, middle) > 0).sorted(ordering)
+      List.appendAll(List(lessThan, equals, greaterThan))
     } else {
       as
     }
   }
+
+  def forall[A](as: List[A])(p: A => Boolean): Boolean = foldLeft(as, true)(_ && p(_))
+
+  def foreach[A](as: List[A])(f: A => Unit): Unit = as match {
+    case Nil => ()
+    case Cons(h, t) =>
+      f(h)
+      foreach(t)(f)
+  }
+
+  def headOption[A](as: List[A]): Option[A] = as.getAtIndex(0)
+
+  def head[A](as: List[A]): A = try {
+    as.valueAtIndex(0)
+  } catch {
+    case t: IndexOutOfBoundsException => throw new IndexOutOfBoundsException("Head of empty list")
+  }
+
+  def lastOption[A](as: List[A]): Option[A] = as.reverse.headOption
+  def last[A](as: List[A]): A = try {
+    as.reverse.head
+  } catch {
+    case t: IndexOutOfBoundsException => throw new IndexOutOfBoundsException("Last of empty list")
+  }
+
+  def minOption[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): Option[A] = as.sorted(ordering).headOption
+  def maxOption[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): Option[A] = as.sorted(ordering.reverse).headOption
 }
