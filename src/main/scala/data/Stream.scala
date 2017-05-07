@@ -96,6 +96,8 @@ sealed trait Stream[+A] {
     case (StreamCons(a, atail), StreamCons(b, btail)) => cons(f(a(),b()), atail().zipWith(btail())(f))
   }
 
+  def zip[B](other: Stream[B]): Stream[(A,B)] = zipWith(other)((_,_))
+
   // exercise 5.13, some functions via unfold
 
   def map2[B](f: A => B): Stream[B] = unfold(this) {
