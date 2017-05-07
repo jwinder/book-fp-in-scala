@@ -17,6 +17,8 @@ case class SimpleRNG(seed: Long) extends RNG {
 }
 
 object RNG {
+  def simple(seed: Long = System.currentTimeMillis): RNG = new SimpleRNG(seed)
+
   def randomPair(rng: RNG): ((Int, Int), RNG) = {
     val (i1, rng2) = rng.nextInt
     val (i2, rng3) = rng2.nextInt

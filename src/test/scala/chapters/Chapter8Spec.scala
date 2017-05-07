@@ -15,4 +15,8 @@ class Chapter8Spec extends Specification {
     MaxIntProperties(List.empty).check() must beTrue
     MaxIntProperties(List(1,2,3)).check() must beTrue
   }
+
+  "ListSortedProperties" in {
+    ListSortedProperties.check() must beTrue
+  }
 }

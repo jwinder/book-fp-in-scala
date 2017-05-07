@@ -1,5 +1,6 @@
 package data
 import scala.annotation.tailrec
+import scala.collection.immutable.{List => ScalaList}
 
 sealed trait List[+A] {
   def getAtIndex(index: Int): Option[A] = List.getAtIndex(this, index)
@@ -33,7 +34,16 @@ sealed trait List[+A] {
   def lastOption: Option[A] = List.lastOption(this)
   def last: A = List.last(this)
   def minOption[B >: A](implicit ordering: Ordering[B]): Option[A] = List.minOption[A,B](this)(ordering)
+  def min[B >: A](implicit ordering: Ordering[B]): A = List.min[A,B](this)(ordering)
   def maxOption[B >: A](implicit ordering: Ordering[B]): Option[A] = List.maxOption[A,B](this)(ordering)
+  def max[B >: A](implicit ordering: Ordering[B]): A = List.max[A,B](this)(ordering)
+  def exists(p: A => Boolean): Boolean = List.exists(this)(p)
+  def contains[B >: A](a: B): Boolean = List.contains[A,B](this)(a)
+
+  // couldn't quite get the variance right on reduce, taking the easy way out
+  def toScala(): ScalaList[A] = List.toScala(this)
+  def reduce[B >: A](f: (B,B) => B): B = toScala.reduce(f)
+  def reduceLeft[B >: A](f: (B,A) => B): B = toScala.reduceLeft(f)
 }
 
 case object Nil extends List[Nothing]
@@ -45,6 +55,11 @@ object List {
   }
 
   def empty[A]: List[A] = Nil
+
+  def fromScala[A](as: ScalaList[A]): List[A] = apply(as: _*)
+  def toScala[A](as: List[A]): ScalaList[A] = {
+    as.foldLeft(ScalaList.empty[A]) { case (sl, a) => sl :+ a }
+  }
 
   // exercise 3.1
   // answer 1
@@ -267,5 +282,15 @@ object List {
   }
 
   def minOption[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): Option[A] = as.sorted(ordering).headOption
+  def min[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): A = as.sorted(ordering).head
   def maxOption[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): Option[A] = as.sorted(ordering.reverse).headOption
+  def max[A, B >: A](as: List[A])(implicit ordering: Ordering[B]): A = as.sorted(ordering.reverse).head
+
+  def exists[A](as: List[A])(p: A => Boolean): Boolean = as match {
+    case Cons(h, t) if p(h) => true
+    case Cons(h, t) => exists(t)(p)
+    case Nil => false
+  }
+
+  def contains[A, B >: A](as: List[A])(a: B): Boolean = as.exists(_ == a)
 }

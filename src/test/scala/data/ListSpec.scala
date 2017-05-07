@@ -88,10 +88,23 @@ class ListSpec extends Specification {
     List.empty.lastOption must_== None
   }
 
-  "minOption/maxOption" in {
+  "min/max/minOption/maxOption" in {
     List(1,2,3).minOption must_== Option.some(1)
     List(1,2,3).maxOption must_== Option.some(3)
     List.empty[Int].minOption must_== Option.none
     List.empty[Int].maxOption must_== Option.none
+
+    List(1,2,3).min must_== 1
+    List(1,2,3).max must_== 3
+  }
+
+  "exists" in {
+    List(1,2,3).exists(_ == 2) must beTrue
+    List(1,2,3).exists(_ == 5) must beFalse
+  }
+
+  "contains" in {
+    List(1,2,3).contains(2) must beTrue
+    List(1,2,3).contains(5) must beFalse
   }
 }

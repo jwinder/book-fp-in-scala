@@ -10,9 +10,10 @@ case class Gen[+A](sample: State[RNG, A]) {
 
   def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap { n => Gen.listOfN(n, this) }
 
-  def stream(rng: RNG): Stream[A] = {
-    Stream.unfold(rng)(rng => Some(sample.run(rng)))
-  }
+  def stream(rng: RNG): Stream[A] = Stream.unfold(rng)(rng => Some(sample.run(rng)))
+
+  // exercise 8.10
+  def unsized: SGen[A] = SGen(this)
 }
 
 object Gen {
@@ -52,4 +53,6 @@ object Gen {
     val middle = leftWeight / (leftWeight + rightWeight)
     double.flatMap { d => if (d < middle) left._1 else right._1 }
   }
+
+  def smallInt: Gen[Int] = Gen.choose(-10,10)
 }
