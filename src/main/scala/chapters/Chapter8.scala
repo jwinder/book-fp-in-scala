@@ -2,6 +2,7 @@ package chapters
 
 import data._
 import check._
+import concurrent._
 
 object Chapter8 {
 
@@ -40,7 +41,7 @@ object Chapter8 {
   }
 
   // exercise 8.14
-  case object ListSortedProperties {
+  object ListSortedProperties {
     def minCheck(ints: List[Int]): Boolean = {
       if (ints.isEmpty) {
         true
@@ -69,16 +70,44 @@ object Chapter8 {
     }
 
     def runProps(): Prop.Result = {
-      val gen = SGen.nonEmptyListOf(Gen.choose(1,100))
-      val prop = Prop.forAll(gen) { ints => checkList(ints.sorted) }
+      val gen = SGen.nonEmptyListOf(Gen.choose(1,100)).map(_.sorted)
+      val prop = Prop.forAll(gen)(checkList)
       Prop.run(prop, 100, 100)
     }
 
-    def check() = {
-      runProps().isPassed == true
-    }
+    def check() = runProps().isPassed
   }
 
-  // exercise 8.15
-  // todo
+  // exercise 8.17
+  object ForkXEqualsXProperties {
+
+    def runProps(): Prop.Result = {
+      val gen = (Gen.double ** Gen.executorService).map {
+        case (n, es) => (n, Par.lazyUnit(n), es)
+      }
+      val prop = Prop.forAll(gen) {
+        case (n, parN, es) => n == parN(es).get()
+      }
+      Prop.run(prop, 100, 100)
+    }
+
+    def check() = runProps().isPassed
+  }
+
+  // exercise 8.18
+  object TakeWhileProperties {
+
+    def check() = {
+      val gen = SGen.nonEmptyListOf(Gen.choose(1,100)).map(_.distinct.sorted)
+      def isPassed(check: List[Int] => Boolean): Boolean = {
+        val prop = Prop.forAll(gen)(check)
+        Prop.run(prop, 100, 100).isPassed
+      }
+
+      isPassed(ints => ints.takeWhile(_ => true) == ints) &&
+        isPassed(ints => ints.takeWhile(_ => false) == Nil) &&
+        isPassed(ints => ints.takeWhile(_ < ints.last) == ints.init) &&
+        isPassed(ints => ints.takeWhile(_ < ints.head) == Nil)
+    }
+  }
 }

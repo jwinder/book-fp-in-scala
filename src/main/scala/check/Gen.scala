@@ -1,9 +1,13 @@
 package check
 
+import java.util.concurrent.{Executors, ExecutorService}
 import data._
+import concurrent._
 
 case class Gen[+A](sample: State[RNG, A]) {
   def map[B](f: A => B): Gen[B] = Gen(sample.map(f))
+
+  def map2[B,C](other: Gen[B])(f: (A,B) => C): Gen[C] = Gen(sample.map2(other.sample)(f))
 
   // exercise 8.6
   def flatMap[B](f: A => Gen[B]): Gen[B] = Gen(sample.flatMap(a => f(a).sample))
@@ -14,6 +18,8 @@ case class Gen[+A](sample: State[RNG, A]) {
 
   // exercise 8.10
   def unsized: SGen[A] = SGen(this)
+
+  def **[B](g: Gen[B]): Gen[(A,B)] = this.map2(g)(Tuple2.apply)
 }
 
 object Gen {
@@ -55,4 +61,16 @@ object Gen {
   }
 
   def smallInt: Gen[Int] = Gen.choose(-10,10)
+
+  def executorService: Gen[ExecutorService] = weighted(unit(Executors.newCachedThreadPool) -> 0.25,
+                                                       choose(1,4).map(Executors.newFixedThreadPool) -> 0.75)
+
+  // exercise 8.16
+  def parInt: Gen[Par.Par[Int]] = {
+    val int: Int = RNG.simple().nextInt._1.abs
+    Gen.choose(-int, int).map(Par.unit(_))
+  }
+
+  // exercise 8.19
+  def argIntFunction[A]: Gen[A => Int] = Gen.choose(1,1000).map(n => a => n * a.hashCode)
 }

@@ -1,6 +1,7 @@
 package check
 
 import data._
+import concurrent._
 
 case class Prop(run: (Prop.MaxSize, Prop.TestCases, RNG) => Prop.Result) {
   import Prop._
@@ -108,18 +109,22 @@ object Prop {
 
   def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop {
     (max,n,rng) =>
-      val casesPerSize = (n - 1) / max + 1
-      val props: Stream[Prop] =
-        Stream.from(0).take((n min max) + 1).map(i => forAll(g(i))(f))
-      val prop: Prop =
-        props.map(p => Prop { (max, n, rng) =>
-          p.run(max, casesPerSize, rng)
-        }).toList.reduce(_ && _)
-      prop.run(max,n,rng)
+    val casesPerSize = (n - 1) / max + 1
+    val props: Stream[Prop] =
+      Stream.from(0).take((n min max) + 1).map(i => forAll(g(i))(f))
+    val prop: Prop =
+      props.map(p => Prop { (max, n, rng) =>
+                  p.run(max, casesPerSize, rng)
+                }).toList.reduce(_ && _)
+    prop.run(max,n,rng)
   }
 
   def maxProp: Prop = forAll(SGen.nonEmptyListOf(Gen.smallInt)) { ns =>
     val max = ns.max
     !ns.exists(_ > max)
+  }
+
+  def forAllPar[A](g: Gen[A])(f: A => Par.Par[Boolean]): Prop = {
+    forAll(g ** Gen.executorService) { case (a, es) => f(a)(es).get() }
   }
 }

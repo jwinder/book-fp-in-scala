@@ -1,7 +1,6 @@
 package chapters
 
 import org.specs2.mutable.Specification
-import scala.util.Random
 
 class Chapter6Spec extends Specification {
   import Chapter6._

@@ -19,4 +19,12 @@ class Chapter8Spec extends Specification {
   "ListSortedProperties" in {
     ListSortedProperties.check() must beTrue
   }
+
+  "ForkXEqualsXProperties" in {
+    ForkXEqualsXProperties.check() must beTrue
+  }
+
+  "TakeWhileProperties" in {
+    TakeWhileProperties.check() must beTrue
+  }
 }

@@ -11,6 +11,7 @@ sealed trait List[+A] {
   def setHead[A](head: A) = List.setHead(head, this)
   def drop(n: Int): List[A] = List.drop(this, n)
   def dropWhile(f: A => Boolean): List[A] = List.dropWhile(this, f)
+  def init: List[A] = List.init(this)
   def foldLeft[B](z: B)(f: (B,A) => B): B = List.foldLeft(this, z)(f)
   def reverse: List[A] = List.reverse(this)
   def foldRight[B](z: B)(f: (A,B) => B): B = List.foldRight(this, z)(f)
@@ -39,6 +40,9 @@ sealed trait List[+A] {
   def max[B >: A](implicit ordering: Ordering[B]): A = List.max[A,B](this)(ordering)
   def exists(p: A => Boolean): Boolean = List.exists(this)(p)
   def contains[B >: A](a: B): Boolean = List.contains[A,B](this)(a)
+  def take(n: Int): List[A] = List.take(this)(n)
+  def takeWhile(f: A => Boolean): List[A] = List.takeWhile(this)(f)
+  def distinct: List[A] = List.distinct(this)
 
   // couldn't quite get the variance right on reduce, taking the easy way out
   def toScala(): ScalaList[A] = List.toScala(this)
@@ -98,7 +102,7 @@ object List {
   def appendElement2[A](as: List[A], a: A): List[A] = append2(as, List(a))
 
   // exercise 3.6
-  def init2[A](as: List[A]): List[A] = {
+  def init[A](as: List[A]): List[A] = {
     @tailrec
     def init0[A](rebuilt: List[A], leftover: List[A]): List[A] = leftover match {
       case Nil => rebuilt
@@ -293,4 +297,20 @@ object List {
   }
 
   def contains[A, B >: A](as: List[A])(a: B): Boolean = as.exists(_ == a)
+
+  def take[A](as: List[A])(n: Int): List[A] = as match {
+    case Nil => Nil
+    case Cons(head, tail) if n > 0 => Cons(head, take(tail)(n - 1))
+    case other => Nil
+  }
+
+  def takeWhile[A](as: List[A])(f: A => Boolean): List[A] = as match {
+    case Nil => Nil
+    case Cons(head, tail) if f(head) => Cons(head, takeWhile(tail)(f))
+    case other => Nil
+  }
+
+  def distinct[A](as: List[A]): List[A] = as.foldRight(List.empty[A]) {
+    (head, tail) => Cons(head, tail.filter(_ != head))
+  }
 }

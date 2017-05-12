@@ -107,4 +107,34 @@ class ListSpec extends Specification {
     List(1,2,3).contains(2) must beTrue
     List(1,2,3).contains(5) must beFalse
   }
+
+  "take" in {
+    List(1,2,3).take(0) must_== Nil
+    List(1,2,3).take(2) must_== List(1,2)
+    List(1,2,3).take(5) must_== List(1,2,3)
+    List.empty[Int].take(5) must_== Nil
+  }
+
+  "takeWhile" in {
+    List(1,2,3).takeWhile(_ < 3) must_== List(1,2)
+    List(1,2,3).takeWhile(_ >= 1) must_== List(1,2,3)
+    List(1,2,3).takeWhile(_ < 1) must_== Nil
+    List.empty[Int].takeWhile(_ < 1) must_== Nil
+  }
+
+  "distinct" in {
+    List.empty[Int].distinct must_== List.empty
+    List(1,2,3).distinct must_== List(1,2,3)
+    List(1,1,2,3).distinct must_== List(1,2,3)
+    List(1,1,2,2,3,3,3,3).distinct must_== List(1,2,3)
+  }
+
+  "init/tail" in {
+    List(1,2,3).init must_== List(1,2)
+    List(1,2,3).tail must_== List(2,3)
+    List(1).init must_== List.empty
+    List(1).tail must_== List.empty
+    List.empty.init must_== List.empty
+    List.empty.tail must_== List.empty
+  }
 }

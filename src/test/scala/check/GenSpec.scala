@@ -55,4 +55,13 @@ class GenSpec extends Specification {
     val (i2, _) = Rand.randomIntBetween(1,100)(rng2)
     streamedList must_== List(i, i2)
   }
+
+  "argIntFunction" in {
+    val rng = RNG.simple()
+    val stringIntFunctionGen = Gen.argIntFunction[String]
+    val stringIntFunction: String => Int = stringIntFunctionGen.sample.run(rng)._1
+    val randomString = java.util.UUID.randomUUID().toString
+    val expected = Gen.choose(1,1000).map(_ * randomString.hashCode).sample.run(rng)._1
+    stringIntFunction(randomString) must_== expected
+  }
 }
