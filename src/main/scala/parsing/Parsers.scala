@@ -61,6 +61,9 @@ trait Parsers[ParseError, Parser[+_]] { self =>
   def product[A,B](p: Parser[A], p2: => Parser[B]): Parser[(A,B)] = ???
   def map2ViaFlatmap[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = ???
 
+  // the rest of the exercise answers were lost in a computer accident :-(
+  // please refer to the online answers repo for the rest of the exercises if needed.
+
   class ParserOps[A](p: Parser[A]) {
     def run(input: String): Either[ParseError, A] = self.run(p)(input)
 
