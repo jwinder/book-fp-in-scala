@@ -1,8 +1,12 @@
 package data
+
 import org.specs2.mutable.Specification
+import org.specs2.specification.{Scope, After}
+import java.util.concurrent._
 
 class MonoidSpec extends Specification {
   import Monoid._
+  import check._
 
   "stringMonoid" in {
     stringMonoid.op("a", "b") must_== "ab"
@@ -49,5 +53,41 @@ class MonoidSpec extends Specification {
   "endoMonoid" in {
     endoMonoid[Int].op(_ + 2, _ * 3)(5) must_== 21
     endoMonoid[Int].zero(5) must_== 5
+  }
+
+  "monoidLaws" in {
+    val prop = monoidLaws(intAddition, Gen.choose(0, 10000))
+    Prop.run(prop, 10, 10).isPassed must beTrue
+  }
+
+  "foldMap" in {
+    foldMap(List("2","4","6"), intMultiplication)(_.toInt) must_== 48
+  }
+
+  "foldMapV" in {
+    foldMapV(IndexedSeq("2","4","6"), intMultiplication)(_.toInt) must_== 48
+    foldMapV(IndexedSeq("1"), intMultiplication)(_.toInt) must_== 1
+  }
+
+  "par.apply" in new parContext {
+    import concurrent._
+    import Par._
+
+    val parIntAddition = par(intAddition)
+    parIntAddition.zero(es).get must_== 0
+    parIntAddition.op(unit(5), unit(10))(es).get must_== 15
+  }
+
+  "par.foldMap" in new parContext {
+    import concurrent._
+    import Par._
+
+    par.foldMap(IndexedSeq("2","4","6"), intMultiplication)(_.toInt)(es).get must_== 48
+    par.foldMap(IndexedSeq("1"), intMultiplication)(_.toInt)(es).get must_== 1
+  }
+
+  trait parContext extends Scope with After {
+    lazy val es = Executors.newFixedThreadPool(25)
+    def after() = es.shutdownNow()
   }
 }
