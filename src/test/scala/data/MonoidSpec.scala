@@ -86,6 +86,23 @@ class MonoidSpec extends Specification {
     par.foldMap(IndexedSeq("1"), intMultiplication)(_.toInt)(es).get must_== 1
   }
 
+  "productMonoid" in {
+    val m = productMonoid(intAddition, intMultiplication)
+    m.zero must_== (0,1)
+    m.op((2,2), (3,3)) must_== (5,6)
+  }
+
+  "functionMonoid" in {
+    val m = functionMonoid[Int, Int](intMultiplication)
+    m.zero(10) must_== 1
+    m.op(_*2, _*5)(5) must_== 250
+  }
+
+  "mapMergeMonoid" in {
+    val m = mapMergeMonoid[Int, Int](intMultiplication)
+    m.op(Map(1 -> 2, 2 -> 4, 4 -> 8), Map(2 -> 6, 5 -> 10)) must havePairs(1 -> 2, 2 -> 24, 4 -> 8, 5 -> 10)
+  }
+
   trait parContext extends Scope with After {
     lazy val es = Executors.newFixedThreadPool(25)
     def after() = es.shutdownNow()

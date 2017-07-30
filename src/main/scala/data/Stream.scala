@@ -1,7 +1,10 @@
 package data
+import scala.collection.immutable.{Stream => ScalaStream}
 
 sealed trait Stream[+A] {
   import Stream._
+
+  def toScala(): ScalaStream[A] = Stream.toScala(this)
 
   def equiv[A](other: Stream[A]): Boolean = (this, other) match {
     case (StreamEmpty, StreamEmpty) => true
@@ -163,6 +166,16 @@ case object StreamEmpty extends Stream[Nothing]
 case class StreamCons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
 object Stream {
+
+  def toScala[A](as: Stream[A]): ScalaStream[A] = as match {
+    case StreamEmpty => ScalaStream.empty[A]
+    case StreamCons(h, t) => h() #:: toScala(t())
+  }
+
+  def fromScala[A](as: ScalaStream[A]): Stream[A] = as match {
+    case ScalaStream.Empty => empty
+    case h #:: t => cons(h, fromScala(t))
+  }
 
   def cons[A](h: => A, t: => Stream[A]): Stream[A] = {
     // cache values to prevent multiple execution

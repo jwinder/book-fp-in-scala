@@ -114,4 +114,26 @@ object Monoid {
       _foldMap(v)
     }
   }
+
+  // exercise 10.16
+  def productMonoid[A,B](mA: Monoid[A], mB: Monoid[B]): Monoid[(A,B)] = new Monoid[(A,B)] {
+    def op(a1: (A,B), a2: (A,B)): (A,B) = (mA.op(a1._1, a2._1), mB.op(a1._2, a2._2))
+    def zero: (A,B) = (mA.zero, mB.zero)
+  }
+
+  def mapMergeMonoid[K,V](mV: Monoid[V]): Monoid[Map[K,V]] = new Monoid[Map[K,V]] {
+    def op(a: Map[K,V], b: Map[K,V]): Map[K,V] = {
+      (a.keySet ++ b.keySet).foldLeft(zero) { (map, key) =>
+        val value = mV.op(a.getOrElse(key, mV.zero), b.getOrElse(key, mV.zero))
+        map.updated(key, value)
+      }
+    }
+    def zero = Map.empty[K,V]
+  }
+
+  // exercise 10.17
+  def functionMonoid[A,B](mB: Monoid[B]): Monoid[A => B] = new Monoid[A => B] {
+    def op(a1: A => B, a2: A => B): A => B = a => mB.op(a1(a), a2(a))
+    def zero: A => B = _ => mB.zero
+  }
 }
